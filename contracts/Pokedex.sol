@@ -92,19 +92,21 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         _unpause();
     }
 
-    function requestMint() external payable whenNotPaused {
-        if (msg.value < mintFee) revert Pokedex__PriceTooLow();
-        if ((_tokenCounter + 1) >= maxSupply) revert Pokedex__MaxSupplyReached();
+    function requestMint(uint256 _quantity) external payable whenNotPaused {
+        if (msg.value < (mintFee * _quantity)) revert Pokedex__PriceTooLow();
+        if ((_tokenCounter + _quantity) >= maxSupply) revert Pokedex__MaxSupplyReached();
 
-        // sends a request to Chainlink VRF for random numbers
-        uint256 requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
-        );
-        requestIdToOwner[requestId] = msg.sender;
+        for (uint256 i = 0; i < _quantity; i++) {
+            // sends a request to Chainlink VRF for random numbers
+            uint256 requestId = COORDINATOR.requestRandomWords(
+                keyHash,
+                subscriptionId,
+                requestConfirmations,
+                callbackGasLimit,
+                numWords
+            );
+            requestIdToOwner[requestId] = msg.sender;
+        }
     }
 
     function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords)
