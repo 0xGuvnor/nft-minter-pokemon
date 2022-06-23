@@ -5,6 +5,10 @@ const uriTemplate = {
     image: "",
     attributes: [
         {
+            traitType: "ID",
+            value: "",
+        },
+        {
             traitType: "Type",
             value: [],
         },
