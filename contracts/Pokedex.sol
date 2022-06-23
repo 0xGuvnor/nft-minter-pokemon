@@ -13,24 +13,28 @@ error Pokedex__PriceTooLow();
 error Pokedex__MaxSupplyReached();
 error Pokedex__RangeOutOfBounds();
 error Pokemon__URIAlreadyAssigned();
+error Pokedex__NoETHInContract();
+error Pokedex__TransactionFailed();
 
 contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, AccessControl {
-    VRFCoordinatorV2Interface private immutable COORDINATOR;
-
     struct Pokemon {
         uint256 generation;
         uint256 id;
         bool isURIAssigned;
     }
 
-    // roles
+    ////////////
+    // roles //
+    ///////////
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant URI_ASSIGNER_ROLE = keccak256("URI_ASSIGNER_ROLE");
 
     bytes32 public constant PAUSER_ADMIN_ROLE = keccak256("PAUSER_ADMIN_ROLE");
     bytes32 public constant URI_ASSIGNER__ADMIN_ROLE = keccak256("URI_ASSIGNER_ADMIN_ROLE");
 
-    // state variables
+    /////////////////////
+    // state variables //
+    /////////////////////
     uint256 public _tokenCounter;
     uint256 public maxSupply;
     uint256 public immutable mintFee;
@@ -42,14 +46,17 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
     uint256[5] private generationRarity = [10, 25, 45, 70, 100]; /* UPDATE WHEN YOU CHANGE # OF GENERATIONS! */
     uint256 public pokemonGenerations;
 
-    // VRF settings
+    //////////////////
+    // VRF settings //
+    //////////////////
+    VRFCoordinatorV2Interface private immutable COORDINATOR;
     uint64 private subscriptionId;
     bytes32 private keyHash;
     uint32 private callbackGasLimit;
     uint16 private constant requestConfirmations = 3;
     uint32 private constant numWords = 2;
 
-    event TokenURISubmitted(uint256 indexed tokenId);
+    event TokenURIAssigned(uint256 indexed tokenId);
 
     constructor(
         uint256 _maxSupply,
@@ -76,7 +83,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         mintFee = _mintFee;
         pokemonGenerations = _numOfGenerations;
 
-        // populating the arryas for number of pokemon in each generation
+        // populating arrays for number of pokemon in each generation
         for (uint256 i = 0; i < _numOfGenerations; i++) {
             for (uint256 j = 0; j < _numPerGeneration[i]; j++) {
                 pokemonGenerationCount[i].push(j);
@@ -130,10 +137,11 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         external
         onlyRole(URI_ASSIGNER_ROLE)
     {
+        // URI can't be reassigned once set
         if (tokenIdToPokemon[_tokenId].isURIAssigned) revert Pokemon__URIAlreadyAssigned();
 
         _setTokenURI(_tokenId, _uri);
-        emit TokenURISubmitted(_tokenId);
+        emit TokenURIAssigned(_tokenId);
     }
 
     function _chooseGeneration(uint256 _randomWord) internal view returns (uint256) {
@@ -192,6 +200,16 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
     function getPokemonDetails(uint256 _tokenId) external view returns (uint256, uint256) {
         return (tokenIdToPokemon[_tokenId].generation, tokenIdToPokemon[_tokenId].id);
     }
+
+    function withdrawETH(address _to) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        uint256 balance = address(this).balance;
+        if (balance == 0) revert Pokedex__NoETHInContract();
+
+        (bool success, ) = _to.call{value: balance}("");
+        if (!success) revert Pokedex__TransactionFailed();
+    }
+
+    receive() external payable {}
 
     // The following functions are overrides required by Solidity.
 

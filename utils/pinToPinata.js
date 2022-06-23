@@ -1,6 +1,8 @@
 const pinataSDK = require("@pinata/sdk");
 
 const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
+const pokemonIdAdjustment = { gen1: 1, gen2: 152, gen3: 252, gen4: 387, gen5: 494 };
+const pokemonAPI = "https://pokeapi.co/api/v2/pokemon/";
 const uriTemplate = {
     tokenId: "",
     name: "",
@@ -30,6 +32,6 @@ const uriTemplate = {
     ],
 };
 
-const pinToPinata = async () => {};
+const pinToPinata = async (tokenId) => {};
 
 module.exports = { pinToPinata };

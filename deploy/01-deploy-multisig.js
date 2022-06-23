@@ -7,18 +7,18 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     const { deployer, player } = await getNamedAccounts();
     log("====================================================================");
 
-    const args = [];
-    const waitConfirmations = developmentChains.includes(network.name) ? 1 : BLOCK_CONFIRMATIONS;
-    const multiSig = await deploy("MultiSig", {
-        from: deployer,
-        args,
-        log: true,
-        waitConfirmations,
-    });
+    // const args = [];
+    // const waitConfirmations = developmentChains.includes(network.name) ? 1 : BLOCK_CONFIRMATIONS;
+    // const multiSig = await deploy("MultiSig", {
+    //     from: deployer,
+    //     args,
+    //     log: true,
+    //     waitConfirmations,
+    // });
 
-    if (developmentChains.includes(network.name)) {
-        await verify(multiSig.address, args);
-    }
+    // if (developmentChains.includes(network.name)) {
+    //     await verify(multiSig.address, args);
+    // }
 };
 
 module.exports.tags = ["all", "multisig"];
