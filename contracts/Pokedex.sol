@@ -19,7 +19,8 @@ error Pokedex__TransactionFailed();
 contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, AccessControl {
     struct Pokemon {
         uint256 generation;
-        uint256 id;
+        uint256 id; /* official Pokemon id */
+        uint256 tokenId;
         bool isURIAssigned;
     }
 
@@ -129,6 +130,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
 
         tokenIdToPokemon[tokenId].generation = pokemonGeneration;
         tokenIdToPokemon[tokenId].id = pokemonChosen;
+        tokenIdToPokemon[tokenId].tokenId = tokenId;
 
         _safeMint(nftOwner, tokenId);
     }
@@ -137,10 +139,11 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         external
         onlyRole(URI_ASSIGNER_ROLE)
     {
-        // URI can't be reassigned once set
+        // URI can't be reassigned once it has been set
         if (tokenIdToPokemon[_tokenId].isURIAssigned) revert Pokemon__URIAlreadyAssigned();
 
         _setTokenURI(_tokenId, _uri);
+        tokenIdToPokemon[_tokenId].isURIAssigned = true;
         emit TokenURIAssigned(_tokenId);
     }
 

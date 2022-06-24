@@ -7,11 +7,21 @@ async function main() {
 
     for (let tokenId = 0; tokenId < circulatingSupply; tokenId++) {
         // extracting the isURIAssigned value from each token's pokemon struct
-        if ((await pokedex.tokenIdToPokemon(tokenId))[2] == false) {
-            const tokenURI = await pinToPinata(tokenId);
-            await pokedex.setTokenURI(tokenId, tokenURI);
+        if ((await pokedex.tokenIdToPokemon(tokenId))[3] == false) {
+            const pokemon = await pokedex.tokenIdToPokemon(tokenId);
+
+            const tokenURI = await pinToPinata(pokemon);
+            if (tokenURI) {
+                await pokedex.setTokenURI(tokenId, tokenURI);
+            } else {
+                console.log("Token URI is empty!");
+            }
+
+            console.log(`Token URI assigned for token ID: ${tokenId}!\n`);
         }
     }
+
+    console.log("All token URIs have been asssigned!");
 }
 
 main()
