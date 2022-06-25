@@ -15,7 +15,7 @@ error MultiSig__TxNotConfirmed();
 
 contract MultiSig {
     struct Transaction {
-        address to;
+        address payable to;
         uint256 value;
         bytes data;
         uint256 numConfirmations;
@@ -96,7 +96,7 @@ contract MultiSig {
     }
 
     function submitTransaction(
-        address _to,
+        address payable _to,
         uint256 _value,
         bytes memory _data
     ) external onlyOwner {

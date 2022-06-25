@@ -4,8 +4,9 @@ const { verify } = require("../utils/verify");
 
 module.exports = async ({ deployments, getNamedAccounts }) => {
     const { deploy, log } = deployments;
-    const { deployer, player } = await getNamedAccounts();
+    const { deployer } = await getNamedAccounts();
     log("====================================================================");
+
     const owners = [deployer];
     const numConfirmations = 1;
 

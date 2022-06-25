@@ -30,9 +30,6 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant URI_ASSIGNER_ROLE = keccak256("URI_ASSIGNER_ROLE");
 
-    bytes32 public constant PAUSER_ADMIN_ROLE = keccak256("PAUSER_ADMIN_ROLE");
-    bytes32 public constant URI_ASSIGNER__ADMIN_ROLE = keccak256("URI_ASSIGNER_ADMIN_ROLE");
-
     /////////////////////
     // state variables //
     /////////////////////

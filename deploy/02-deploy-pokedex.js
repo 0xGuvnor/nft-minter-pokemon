@@ -13,7 +13,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     log("====================================================================");
 
     // instantiate constructor ar
-    let vrfCoordinatorV2Address, subscriptionId;
+    let vrfCoordinator, vrfCoordinatorV2Address, subscriptionId;
     const maxSupply = 200;
     const keyHash = networkConfig[chainId].keyHash;
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit;
@@ -34,6 +34,10 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     } else {
         vrfCoordinatorV2Address = networkConfig[chainId].vrfCoordinatorV2Address;
         subscriptionId = networkConfig[chainId].subscriptionId;
+        vrfCoordinator = await ethers.getContractAt(
+            "VRFCoordinatorV2Interface",
+            vrfCoordinatorV2Address
+        );
     }
 
     const args = [
@@ -56,6 +60,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
 
     if (!developmentChains.includes(network.name)) {
         await verify(pokedex.address, args);
+        await vrfCoordinator.addConsumer(subscriptionId, pokedex.address);
     }
 };
 
