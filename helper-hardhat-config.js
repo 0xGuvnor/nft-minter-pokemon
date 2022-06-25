@@ -33,6 +33,12 @@ const networkConfig = {
     },
     97: {
         name: "bscTestnet",
+        vrfCoordinatorV2Address: "0x6A2AAd07396B36Fe02a22b33cf443582f682c82f",
+        linkToken: "0x84b9b910527ad5c03a9ca831909e21e236ea7b06",
+        keyHash: "0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314",
+        subscriptionId: 4446,
+        callbackGasLimit: 500_000,
+        mintFee: ethers.utils.parseEther("0.1"),
     },
     69: {
         name: "optimisticKovan",

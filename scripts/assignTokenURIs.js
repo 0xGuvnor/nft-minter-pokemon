@@ -17,7 +17,7 @@ async function main() {
                 console.log("Token URI is empty!");
             }
 
-            console.log(`Token URI assigned for token ID: ${tokenId}!\n`);
+            console.log(`Token URI assigned for token ID #${tokenId}!\n`);
         }
     }
 

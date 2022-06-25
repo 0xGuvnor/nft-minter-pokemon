@@ -21,10 +21,10 @@ const retrievePinned = async () => {
     const pinnedList = [];
     const filters = { status: "pinned" };
     const myPins = await pinata.pinList(filters);
+    console.log(`Found ${myPins.count} pin(s)...`);
     for (const pin of myPins.rows) {
         pinnedList.push(pin.ipfs_pin_hash);
     }
-    console.log(`Found ${myPins.count} pin(s)...`);
     return pinnedList;
 };
 

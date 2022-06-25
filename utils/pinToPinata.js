@@ -5,31 +5,22 @@ const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECR
 // official Pokemon ID as per https://en.wikipedia.org/wiki/List_of_Pok%C3%A9mon#List_of_species
 const pokemonIdAdjustment = { 0: 1, 1: 152, 2: 252, 3: 387, 4: 494 };
 const pokemonAPI = (id) => `https://pokeapi.co/api/v2/pokemon/${id}`;
-const uriUrlPrefix = "https://gateway.pinata.cloud/ipfs/";
+const uriUrlPrefix = "ipfs://";
 const uriTemplate = {
-    tokenId: "",
     name: "",
     description: "",
     image: "",
     attributes: [
         {
-            traitType: "ID",
+            trait_type: "ID",
             value: "",
         },
         {
-            traitType: "Type",
-            value: [],
-        },
-        {
-            traitType: "Abilities",
-            value: [],
-        },
-        {
-            traitType: "Weight",
+            trait_type: "Weight",
             value: "",
         },
         {
-            traitType: "Height",
+            trait_type: "Height",
             value: "",
         },
     ],
@@ -49,19 +40,24 @@ const pinToPinata = async ({ generation, id, tokenId }) => {
 
     // Populating the token URI with relevant data
     let tokenURI = { ...uriTemplate };
-    tokenURI.tokenId = tokenId.toNumber();
-    tokenURI.name = capitalizeWord(pokemonData.name);
+    tokenURI.name = `#${tokenId.toNumber()} ${capitalizeWord(pokemonData.name)}`;
     tokenURI.description = `A wild ${tokenURI.name} appeared!`;
     tokenURI.image = pokemonData.sprites.other["official-artwork"].front_default;
-    tokenURI.attributes[0].value = pokemonData.id;
+    tokenURI.attributes[0].value = pokemonData.id.toString();
+    tokenURI.attributes[1].value = pokemonData.weight / 10;
+    tokenURI.attributes[2].value = pokemonData.height / 10;
     for (const type of pokemonData.types) {
-        tokenURI.attributes[1].value.push(capitalizeWord(type.type.name));
+        tokenURI.attributes.push({
+            trait_type: "Type",
+            value: capitalizeWord(type.type.name),
+        });
     }
     for (const ability of pokemonData.abilities) {
-        tokenURI.attributes[2].value.push(capitalizeWord(ability.ability.name));
+        tokenURI.attributes.push({
+            trait_type: "Ability",
+            value: capitalizeWord(ability.ability.name),
+        });
     }
-    tokenURI.attributes[3] = `${pokemonData.weight / 10}kg`;
-    tokenURI.attributes[4] = `${pokemonData.height / 10}m`;
 
     // pin token URI JSON to pinata
     console.log(`Pinning token ID #${tokenId.toNumber()}'s URI to Pinata...`);
