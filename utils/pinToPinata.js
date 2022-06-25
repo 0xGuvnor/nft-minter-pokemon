@@ -41,7 +41,7 @@ const pinToPinata = async ({ generation, id, tokenId }) => {
     // Populating the token URI with relevant data
     let tokenURI = { ...uriTemplate };
     tokenURI.name = `#${tokenId.toNumber()} ${capitalizeWord(pokemonData.name)}`;
-    tokenURI.description = `A wild ${tokenURI.name} appeared!`;
+    tokenURI.description = `A wild ${capitalizeWord(pokemonData.name)} appeared!`;
     tokenURI.image = pokemonData.sprites.other["official-artwork"].front_default;
     tokenURI.attributes[0].value = pokemonData.id.toString();
     tokenURI.attributes[1].value = pokemonData.weight / 10;

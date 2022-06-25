@@ -1,7 +1,7 @@
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 
-const amountToMint = 3;
+const amountToMint = 6;
 
 async function main(amountToMint) {
     const pokedex = await ethers.getContract("Pokedex");
