@@ -5,6 +5,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
@@ -16,7 +17,14 @@ error Pokemon__URIAlreadyAssigned();
 error Pokedex__NoETHInContract();
 error Pokedex__TransactionFailed();
 
-contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, AccessControl {
+contract Pokedex is
+    VRFConsumerBaseV2,
+    ERC721,
+    ERC721URIStorage,
+    ERC721Royalty,
+    Pausable,
+    AccessControl
+{
     struct Pokemon {
         uint256 generation;
         uint256 id; /* official Pokemon id */
@@ -36,6 +44,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
     uint256 public _tokenCounter;
     uint256 public maxSupply;
     uint256 public immutable mintFee;
+    string public initialURI;
     // Pokemon generation -> array of individual Pokemon in a given generation
     mapping(uint256 => uint256[]) public pokemonGenerationCount;
     mapping(uint256 => address) public requestIdToOwner;
@@ -64,7 +73,8 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         uint32 _callbackGasLimit,
         uint256 _mintFee,
         uint256 _numOfGenerations,
-        uint256[] memory _numPerGeneration
+        uint256[] memory _numPerGeneration,
+        string memory _initialURI
     ) VRFConsumerBaseV2(_vrfCoordinatorAddress) ERC721("Pokedex", "POKEMON") {
         if (_numPerGeneration.length != _numOfGenerations)
             revert Pokedex__PokemonPerGenerationDoesNotMatch();
@@ -72,8 +82,13 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(URI_ASSIGNER_ROLE, msg.sender);
+        _setDefaultRoyalty(
+            address(this),
+            50 /* 5% royalty */
+        );
 
         maxSupply = _maxSupply;
+        initialURI = _initialURI;
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinatorAddress);
         subscriptionId = _subscriptionId;
         keyHash = _keyHash;
@@ -130,6 +145,12 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         tokenIdToPokemon[tokenId].tokenId = tokenId;
 
         _safeMint(nftOwner, tokenId);
+        _setTokenURI(tokenId, initialURI);
+        _setTokenRoyalty(
+            tokenId,
+            address(this),
+            50 /* 5% royalty */
+        );
     }
 
     function setTokenURI(uint256 _tokenId, string calldata _uri)
@@ -201,7 +222,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
         return (tokenIdToPokemon[_tokenId].generation, tokenIdToPokemon[_tokenId].id);
     }
 
-    function withdrawETH(address _to) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function withdrawETH(address payable _to) external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 balance = address(this).balance;
         if (balance == 0) revert Pokedex__NoETHInContract();
 
@@ -213,7 +234,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
 
     // The following functions are overrides required by Solidity.
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage, ERC721Royalty) {
         super._burn(tokenId);
     }
 
@@ -229,7 +250,7 @@ contract Pokedex is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Pausable, Acces
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, AccessControl)
+        override(ERC721, ERC721Royalty, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

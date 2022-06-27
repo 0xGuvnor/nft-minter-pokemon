@@ -1,13 +1,13 @@
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 
-const amountToMint = 6;
+const amountToMint = 1;
 
 async function main(amountToMint) {
     const pokedex = await ethers.getContract("Pokedex");
     const chainId = network.config.chainId;
     const mintFee = networkConfig[chainId].mintFee;
-    console.log(`Minting ${amountToMint} NFTs...`);
+    console.log(`Minting ${amountToMint} NFT(s)...`);
     await pokedex.requestMint(amountToMint, { value: mintFee.mul(amountToMint) });
 }
 

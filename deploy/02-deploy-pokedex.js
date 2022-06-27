@@ -4,6 +4,7 @@ const {
     BLOCK_CONFIRMATIONS,
     networkConfig,
 } = require("../helper-hardhat-config");
+const { createInitialURI } = require("../utils/createInitialURI");
 const { verify } = require("../utils/verify");
 
 module.exports = async ({ deployments, getNamedAccounts }) => {
@@ -20,6 +21,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     const mintFee = networkConfig[chainId].mintFee;
     const numOfGenerations = 5;
     const numPerGeneration = [151, 100, 135, 107, 156];
+    const initialURI = await createInitialURI();
 
     // grabbing VRF args from mock or live network(s)
     if (developmentChains.includes(network.name)) {
@@ -49,6 +51,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
         mintFee,
         numOfGenerations,
         numPerGeneration,
+        initialURI,
     ];
     const waitConfirmations = developmentChains.includes(network.name) ? 1 : BLOCK_CONFIRMATIONS;
     const pokedex = await deploy("Pokedex", {
