@@ -49,7 +49,7 @@ contract Pokedex is
     mapping(uint256 => uint256[]) public pokemonGenerationCount;
     mapping(uint256 => address) public requestIdToOwner;
     mapping(uint256 => Pokemon) public tokenIdToPokemon;
-    // Gen 1 (index 0) rarity -> 5%, Gen 2 (index 1) -> 10% etc...
+    // Gen 1 (index 0) rarity -> 10%, Gen 2 (index 1) -> 15% etc...
     uint256[5] private generationRarity = [10, 25, 45, 70, 100]; /* UPDATE WHEN YOU CHANGE # OF GENERATIONS! */
     uint256 public pokemonGenerations;
 

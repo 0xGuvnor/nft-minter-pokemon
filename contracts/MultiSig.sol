@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 error MultiSig__NotOwner();
+error MultiSig__NotContract();
 error MultiSig__TxDoesNotExist();
 error MultiSig__TxAlreadyExecuted();
 error MultiSig__TxAlreadyConfirmed();
@@ -52,6 +53,11 @@ contract MultiSig {
     ///////////////
     modifier onlyOwner() {
         if (!isOwner[msg.sender]) revert MultiSig__NotOwner();
+        _;
+    }
+
+    modifier onlyContract() {
+        if (msg.sender != address(this)) revert MultiSig__NotContract();
         _;
     }
 
@@ -163,6 +169,15 @@ contract MultiSig {
         isConfirmed[_txIndex][msg.sender] = false;
 
         emit TransactionRevoked(msg.sender, _txIndex);
+    }
+
+    function addOwner(address payable _newOwner) external onlyContract {
+        owners.push(_newOwner);
+        isOwner[_newOwner] = true;
+    }
+
+    function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlyContract {
+        numConfirmationsRequired = _numConfirmationsRequired;
     }
 
     function getOwners() external view returns (address payable[] memory) {
