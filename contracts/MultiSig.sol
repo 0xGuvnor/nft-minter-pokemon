@@ -20,6 +20,7 @@ contract MultiSig {
         uint256 value;
         bytes data;
         uint256 numConfirmations;
+        uint256 numConfirmationsRequired;
         bool isExecuted;
     }
 
@@ -29,7 +30,7 @@ contract MultiSig {
     Transaction[] public transactions;
     address payable[] public owners;
     mapping(address => bool) public isOwner;
-    uint256 public numConfirmationsRequired;
+    uint256 public defaultNumConfirmationsRequired;
     // Transaction ID -> owner -> transaction confirmation
     mapping(uint256 => mapping(address => bool)) public isConfirmed;
 
@@ -94,7 +95,7 @@ contract MultiSig {
             owners.push(owner);
         }
 
-        numConfirmationsRequired = _numConfirmationsRequired;
+        defaultNumConfirmationsRequired = _numConfirmationsRequired;
     }
 
     receive() external payable {
@@ -114,6 +115,7 @@ contract MultiSig {
                 value: _value,
                 data: _data,
                 numConfirmations: 0,
+                numConfirmationsRequired: defaultNumConfirmationsRequired,
                 isExecuted: false
             })
         );
@@ -144,7 +146,7 @@ contract MultiSig {
     {
         Transaction storage transaction = transactions[_txIndex];
 
-        if (transaction.numConfirmations < numConfirmationsRequired)
+        if (transaction.numConfirmations < transaction.numConfirmationsRequired)
             revert MultiSig__NotEnoughConfirmations();
 
         transaction.isExecuted = true;
@@ -177,7 +179,7 @@ contract MultiSig {
     }
 
     function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlyContract {
-        numConfirmationsRequired = _numConfirmationsRequired;
+        defaultNumConfirmationsRequired = _numConfirmationsRequired;
     }
 
     function getOwners() external view returns (address payable[] memory) {
