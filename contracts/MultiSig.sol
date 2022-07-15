@@ -21,6 +21,7 @@ contract MultiSig {
         bytes data;
         uint256 numConfirmations;
         uint256 numConfirmationsRequired;
+        string description;
         bool isExecuted;
     }
 
@@ -105,7 +106,8 @@ contract MultiSig {
     function submitTransaction(
         address payable _to,
         uint256 _value,
-        bytes memory _data
+        bytes memory _data,
+        string memory _description
     ) external onlyOwner {
         uint256 txIndex = transactions.length;
 
@@ -116,6 +118,7 @@ contract MultiSig {
                 data: _data,
                 numConfirmations: 0,
                 numConfirmationsRequired: defaultNumConfirmationsRequired,
+                description: _description,
                 isExecuted: false
             })
         );
