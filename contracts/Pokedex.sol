@@ -41,7 +41,7 @@ contract Pokedex is
     /////////////////////
     // state variables //
     /////////////////////
-    uint256 public _tokenCounter;
+    uint256 public tokenCounter;
     uint256 public maxSupply;
     uint256 public immutable mintFee;
     string public initialURI;
@@ -63,6 +63,12 @@ contract Pokedex is
     uint16 private constant requestConfirmations = 3;
     uint32 private constant numWords = 2;
 
+    ////////////
+    // Events //
+    ////////////
+    event NftRequested(address indexed requester, uint256 requestId);
+    event RandomWordsFulfilled(uint256 indexed tokenId, uint256 rng1, uint256 rng2);
+    event NftMinted(address indexed owner, uint256 indexed tokenId);
     event TokenURIAssigned(uint256 indexed tokenId);
 
     constructor(
@@ -114,7 +120,7 @@ contract Pokedex is
 
     function requestMint(uint256 _quantity) external payable whenNotPaused {
         if (msg.value < (mintFee * _quantity)) revert Pokedex__PriceTooLow();
-        if ((_tokenCounter + _quantity) >= maxSupply) revert Pokedex__MaxSupplyReached();
+        if ((tokenCounter + _quantity) >= maxSupply) revert Pokedex__MaxSupplyReached();
 
         for (uint256 i = 0; i < _quantity; i++) {
             // sends a request to Chainlink VRF for random numbers
@@ -126,6 +132,8 @@ contract Pokedex is
                 numWords
             );
             requestIdToOwner[requestId] = msg.sender;
+
+            emit NftRequested(msg.sender, requestId);
         }
     }
 
@@ -133,9 +141,9 @@ contract Pokedex is
         internal
         override
     {
-        uint256 tokenId = _tokenCounter;
+        uint256 tokenId = tokenCounter;
         address nftOwner = requestIdToOwner[_requestId];
-        _tokenCounter++;
+        tokenCounter++;
 
         uint256 pokemonGeneration = _chooseGeneration(_randomWords[0]);
         uint256 pokemonChosen = _choosePokemon(pokemonGeneration, _randomWords[1]);
@@ -151,6 +159,9 @@ contract Pokedex is
             address(this),
             50 /* 5% royalty */
         );
+
+        emit RandomWordsFulfilled(tokenId, _randomWords[0], _randomWords[1]);
+        emit NftMinted(nftOwner, tokenId);
     }
 
     function setTokenURI(uint256 _tokenId, string calldata _uri)

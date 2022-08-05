@@ -6,10 +6,12 @@ const frontendAbiLocation = "../nft-minter-pokemon-frontend/constants/";
 
 module.exports = async () => {
     if (process.env.UPDATE_FRONTEND == "true") {
-        console.log("Updating frontend...");
-        await updateContractAddresses();
-        await updateContractABI();
-        console.log("Frontend updated!");
+        if (network.name != "hardhat") {
+            console.log("Updating frontend...");
+            await updateContractAddresses();
+            await updateContractABI();
+            console.log("Frontend updated!");
+        }
     }
 };
 

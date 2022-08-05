@@ -13,7 +13,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     const chainId = network.config.chainId;
     log("====================================================================");
 
-    // instantiate constructor ar
+    // instantiate constructor args
     let vrfCoordinator, vrfCoordinatorV2Address, subscriptionId;
     const maxSupply = 200;
     const keyHash = networkConfig[chainId].keyHash;
@@ -23,7 +23,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     const numPerGeneration = [151, 100, 135, 107, 156];
     const initialURI = await createInitialURI();
 
-    // grabbing VRF args from mock or live network(s)
+    // grabbing VRF args from mock or live networks
     if (developmentChains.includes(network.name)) {
         const vrfMock = await ethers.getContract("VRFCoordinatorV2Mock");
         vrfCoordinatorV2Address = vrfMock.address;
