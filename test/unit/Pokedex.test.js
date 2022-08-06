@@ -73,15 +73,21 @@ const { network, ethers, deployments } = require("hardhat");
                           pokemonChosen = rng2.mod(107); /* 107 Pokémon in Gen 4, 
                               chooses the 76th (index 75) Pokémon */
 
-                          expect((await pokedex.tokenIdToPokemon(tokenId))[0]).to.equal(
-                              3
-                          ); /* Pokémon generation check */
+                          /* Pokémon generation check */
+                          expect((await pokedex.getPokemonDetails(tokenId))[0]).to.equal(3);
+                          expect((await pokedex.tokenIdToPokemon(tokenId))[0]).to.equal(3);
+                          /* Pokémon ID check */
+                          expect((await pokedex.getPokemonDetails(tokenId))[1]).to.equal(
+                              pokemonChosen
+                          );
                           expect((await pokedex.tokenIdToPokemon(tokenId))[1]).to.equal(
                               pokemonChosen
-                          ); /* Pokémon ID check */
-                          expect(await pokedex.getPokemonLeftByGenerationCount(3)).to.equal(
-                              106
-                          ); /* Check that Pokémon generation array is reduced by 1 */
+                          );
+                          /* Check that Pokémon generation array is reduced by 1 */
+                          expect(await pokedex.getPokemonLeftByGenerationCount(3)).to.equal(106);
+                          expect(
+                              (await pokedex.getPokemonLeftByGenerationArray(3)).length
+                          ).to.equal(106);
 
                           resolve();
                       } catch (err) {
@@ -104,12 +110,79 @@ const { network, ethers, deployments } = require("hardhat");
                   value: ethers.utils.parseEther("1"),
               });
 
-              /* Attempting to withdraw from minter1 */
+              /* Attempting to withdraw using minter1 */
               await expect(pokedex.withdrawETH(deployer.address)).to.be.reverted;
 
               const startingBal = await provider.getBalance(other.address);
               await pokedex.connect(deployer).withdrawETH(other.address);
               const endingBal = await provider.getBalance(other.address);
               expect(endingBal).to.equal(startingBal.add(ethers.utils.parseEther("1")));
+          });
+
+          it("Only allows Pauser roles to pause/unpause minting", async () => {
+              expect(await pokedex.paused()).to.be.false;
+
+              await expect(pokedex.pause()).to.be.revertedWith("is missing role");
+              await expect(pokedex.connect(deployer).pause())
+                  .to.emit(pokedex, "Paused")
+                  .withArgs(deployer.address);
+
+              expect(await pokedex.paused()).to.be.true;
+
+              await expect(pokedex.unpause()).to.be.revertedWith("is missing role");
+              await expect(pokedex.connect(deployer).unpause())
+                  .to.emit(pokedex, "Unpaused")
+                  .withArgs(deployer.address);
+
+              expect(await pokedex.paused()).to.be.false;
+          });
+
+          it("Only allows URI Assigner roles to assign the URI", async () => {
+              await new Promise(async (resolve, reject) => {
+                  pokedex.once("NftMinted", async (owner, tokenId) => {
+                      try {
+                          await expect(pokedex.setTokenURI(tokenId, "testURI")).to.be.revertedWith(
+                              "is missing role"
+                          );
+
+                          await pokedex.connect(deployer).setTokenURI(tokenId, "testURI");
+                          expect(await pokedex.tokenURI(tokenId)).to.equal("testURI");
+
+                          resolve();
+                      } catch (err) {
+                          console.error(err);
+                          reject(err);
+                      }
+                  });
+
+                  const tx = await pokedex.requestMint(1, { value: mintFee });
+                  const txReceipt = await tx.wait();
+                  const requestId = txReceipt.events[1].args.requestId;
+                  await vrfMock.fulfillRandomWords(requestId, pokedex.address);
+              });
+          });
+
+          it("Only allows URI to be assigned once", async () => {
+              await new Promise(async (resolve, reject) => {
+                  pokedex.once("NftMinted", async (owner, tokenId) => {
+                      try {
+                          await pokedex.connect(deployer).setTokenURI(tokenId, "testURI");
+
+                          await expect(
+                              pokedex.connect(deployer).setTokenURI(tokenId, "testURI")
+                          ).to.be.revertedWith("Pokemon__URIAlreadyAssigned");
+
+                          resolve();
+                      } catch (err) {
+                          console.error(err);
+                          reject(err);
+                      }
+                  });
+
+                  const tx = await pokedex.requestMint(1, { value: mintFee });
+                  const txReceipt = await tx.wait();
+                  const requestId = txReceipt.events[1].args.requestId;
+                  await vrfMock.fulfillRandomWords(requestId, pokedex.address);
+              });
           });
       });
