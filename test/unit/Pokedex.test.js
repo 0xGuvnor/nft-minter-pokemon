@@ -119,7 +119,7 @@ const { network, ethers, deployments } = require("hardhat");
               expect(endingBal).to.equal(startingBal.add(ethers.utils.parseEther("1")));
           });
 
-          it("Only allows Pauser roles to pause/unpause minting", async () => {
+          it("Only allows Pauser roles to pause/unpause minting ⏸", async () => {
               expect(await pokedex.paused()).to.be.false;
 
               await expect(pokedex.pause()).to.be.revertedWith("is missing role");
@@ -137,7 +137,7 @@ const { network, ethers, deployments } = require("hardhat");
               expect(await pokedex.paused()).to.be.false;
           });
 
-          it("Only allows URI Assigner roles to assign the URI", async () => {
+          it("Only allows URI Assigner roles to assign the URI ⛔️", async () => {
               await new Promise(async (resolve, reject) => {
                   pokedex.once("NftMinted", async (owner, tokenId) => {
                       try {
@@ -162,7 +162,7 @@ const { network, ethers, deployments } = require("hardhat");
               });
           });
 
-          it("Only allows URI to be assigned once", async () => {
+          it("Only allows URI to be assigned once 1️⃣", async () => {
               await new Promise(async (resolve, reject) => {
                   pokedex.once("NftMinted", async (owner, tokenId) => {
                       try {
