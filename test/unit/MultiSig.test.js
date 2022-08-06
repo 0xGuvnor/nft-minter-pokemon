@@ -9,6 +9,8 @@ const { expect } = require("chai");
 
           beforeEach(async () => {
               [deployer, otherSigner] = await ethers.getSigners();
-              await deployments.fixture(["all"]);
+              await deployments.fixture("all");
+              multiSig = await ethers.getContract("MultiSig", deployer);
+              pokedex = await ethers.getContract("Pokedex", deployer);
           });
       });
