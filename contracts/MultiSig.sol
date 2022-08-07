@@ -58,7 +58,7 @@ contract MultiSig {
         _;
     }
 
-    modifier onlyContract() {
+    modifier onlySelf() {
         if (msg.sender != address(this)) revert MultiSig__NotContract();
         _;
     }
@@ -176,12 +176,12 @@ contract MultiSig {
         emit TransactionRevoked(msg.sender, _txIndex);
     }
 
-    function addOwner(address payable _newOwner) external onlyContract {
+    function addOwner(address payable _newOwner) external onlySelf {
         owners.push(_newOwner);
         isOwner[_newOwner] = true;
     }
 
-    function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlyContract {
+    function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlySelf {
         defaultNumConfirmationsRequired = _numConfirmationsRequired;
     }
 
