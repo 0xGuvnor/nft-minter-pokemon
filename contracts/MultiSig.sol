@@ -13,6 +13,7 @@ error MultiSig__AlreadyOwner();
 error MultiSig__NotEnoughConfirmations();
 error MultiSig__TxFailed();
 error MultiSig__TxNotConfirmed();
+error MultiSig__NeedAnOwner();
 
 contract MultiSig {
     struct Transaction {
@@ -49,6 +50,8 @@ contract MultiSig {
     event TransactionConfirmed(address indexed owner, uint256 indexed txIndex);
     event TransactionRevoked(address indexed owner, uint256 indexed txIndex);
     event TransactionExecuted(address indexed owner, uint256 indexed txIndex);
+    event OwnerAdded(address indexed owner);
+    event OwnerRemoved(address indexed owner);
 
     ///////////////
     // Modifiers //
@@ -179,6 +182,22 @@ contract MultiSig {
     function addOwner(address payable _newOwner) external onlySelf {
         owners.push(_newOwner);
         isOwner[_newOwner] = true;
+
+        emit OwnerAdded(_newOwner);
+    }
+
+    function removeOwner(address payable _ownerToRemove) external onlySelf {
+        if (owners.length <= 1) revert MultiSig__NeedAnOwner();
+
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == _ownerToRemove) {
+                owners[i] = owners[owners.length - 1];
+                owners.pop();
+            }
+        }
+        delete isOwner[_ownerToRemove];
+
+        emit OwnerRemoved(_ownerToRemove);
     }
 
     function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlySelf {
