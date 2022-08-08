@@ -42,4 +42,6 @@ const { expect } = require("chai");
               expect(owners[0]).to.equal(deployer.address);
               expect(owners[1]).to.equal(otherSigner.address);
           });
+
+          it("Can remove an owner from the MultiSig", async () => {});
       });
