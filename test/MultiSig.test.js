@@ -1,5 +1,5 @@
 const { network, ethers, deployments } = require("hardhat");
-const { developmentChains } = require("../../helper-hardhat-config");
+const { developmentChains } = require("../helper-hardhat-config");
 const { expect } = require("chai");
 
 !developmentChains.includes(network.name)
@@ -133,12 +133,12 @@ const { expect } = require("chai");
 
               await multiSig.confirmTransaction(txId);
 
-              expect((await multiSig.transactions(txId)).numConfirmations).to.equal(1);
+              expect((await multiSig.getTransaction(txId)).numConfirmations).to.equal(1);
               expect(await multiSig.isConfirmed(txId, deployer.address)).to.be.true;
 
               await multiSig.revokeTransaction(txId);
 
-              expect((await multiSig.transactions(txId)).numConfirmations).to.equal(0);
+              expect((await multiSig.getTransaction(txId)).numConfirmations).to.equal(0);
               expect(await multiSig.isConfirmed(txId, deployer.address)).to.be.false;
           });
 
@@ -162,6 +162,27 @@ const { expect } = require("chai");
 
               await expect(multiSig.executeTransaction(txId)).to.be.revertedWith(
                   "MultiSig__NotEnoughConfirmations"
+              );
+          });
+
+          it("Requires a transaction to exist to confirm/execute it 🧩", async () => {
+              await expect(multiSig.confirmTransaction(99)).to.be.revertedWith(
+                  "MultiSig__TxDoesNotExist"
+              );
+              await expect(multiSig.executeTransaction(99)).to.be.revertedWith(
+                  "MultiSig__TxDoesNotExist"
+              );
+          });
+
+          it("Does not allow calling functions to add/remove owners and update num confirmations directly 😵", async () => {
+              await expect(multiSig.addOwner(otherSigner.address)).to.be.revertedWith(
+                  "MultiSig__NotContract"
+              );
+              await expect(multiSig.removeOwner(deployer.address)).to.be.revertedWith(
+                  "MultiSig__NotContract"
+              );
+              await expect(multiSig.setNumConfirmationsRequired(1)).to.be.revertedWith(
+                  "MultiSig__NotContract"
               );
           });
       });
