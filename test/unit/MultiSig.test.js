@@ -14,7 +14,7 @@ const { expect } = require("chai");
               pokedex = await ethers.getContract("Pokedex", deployer);
           });
 
-          it("Can add an additional owner to the MultiSig", async () => {
+          it("Can add an additional owner to the MultiSig 🙋‍♂️", async () => {
               funcData = multiSig.interface.encodeFunctionData("addOwner", [otherSigner.address]);
               const tx = await multiSig.submitTransaction(
                   multiSig.address,
@@ -37,7 +37,7 @@ const { expect } = require("chai");
               expect(owners[1]).to.equal(otherSigner.address);
           });
 
-          it("Can change the number of confirmations required", async () => {
+          it("Can change the number of confirmations required #️⃣", async () => {
               // throws exception if num confirmations is greater than num owners
               funcData = multiSig.interface.encodeFunctionData("setNumConfirmationsRequired", [2]);
               const tx = await multiSig.submitTransaction(
@@ -90,7 +90,7 @@ const { expect } = require("chai");
               expect(await multiSig.getTransactionCount()).to.equal(3);
           });
 
-          it("Can remove an owner from the MultiSig", async () => {
+          it("Can remove an owner from the MultiSig 👋", async () => {
               // Adding new owner
               funcData = multiSig.interface.encodeFunctionData("addOwner", [otherSigner.address]);
               const txAdd = await multiSig.submitTransaction(
@@ -126,7 +126,7 @@ const { expect } = require("chai");
               expect((await multiSig.getOwners())[0]).to.equal(otherSigner.address);
           });
 
-          it("Can revoke a confirmed transaction", async () => {
+          it("Can revoke a confirmed transaction ❌", async () => {
               const tx = await multiSig.submitTransaction(multiSig.address, 100, [], "Test tx");
               const txReceipt = await tx.wait();
               const txId = txReceipt.events[0].args.txIndex;
@@ -142,7 +142,7 @@ const { expect } = require("chai");
               expect(await multiSig.isConfirmed(txId, deployer.address)).to.be.false;
           });
 
-          it("Can receive ETH", async () => {
+          it("Can receive ETH 🤑", async () => {
               const provider = ethers.provider;
 
               expect(await provider.getBalance(multiSig.address)).to.equal(0);
@@ -155,7 +155,7 @@ const { expect } = require("chai");
               );
           });
 
-          it("Requires sufficient confirmations to execute a transaction", async () => {
+          it("Requires sufficient confirmations to execute a transaction 👯", async () => {
               const tx = await multiSig.submitTransaction(otherSigner.address, 99, [], "Test tx");
               const txReceipt = await tx.wait();
               const txId = txReceipt.events[0].args.txIndex;
