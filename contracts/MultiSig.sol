@@ -52,6 +52,7 @@ contract MultiSig {
     event TransactionExecuted(address indexed owner, uint256 indexed txIndex);
     event OwnerAdded(address indexed owner);
     event OwnerRemoved(address indexed owner);
+    event NumConfirmationsUpdated(uint256 previous, uint256 current);
 
     ///////////////
     // Modifiers //
@@ -201,7 +202,13 @@ contract MultiSig {
     }
 
     function setNumConfirmationsRequired(uint256 _numConfirmationsRequired) external onlySelf {
+        if (_numConfirmationsRequired == 0 || _numConfirmationsRequired > owners.length)
+            revert MultiSig__InvalidNumConfirmationsRequired();
+
+        uint256 previousNum = defaultNumConfirmationsRequired;
         defaultNumConfirmationsRequired = _numConfirmationsRequired;
+
+        emit NumConfirmationsUpdated(previousNum, _numConfirmationsRequired);
     }
 
     function getOwners() external view returns (address payable[] memory) {
