@@ -3,7 +3,7 @@ const { pinToPinata } = require("../utils/pinToPinata");
 
 async function main() {
     const pokedex = await ethers.getContract("Pokedex");
-    const circulatingSupply = await pokedex._tokenCounter();
+    const circulatingSupply = await pokedex.tokenCounter();
 
     for (let tokenId = 0; tokenId < circulatingSupply; tokenId++) {
         // extracting the isURIAssigned value from each token's pokemon struct

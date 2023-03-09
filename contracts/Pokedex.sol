@@ -27,7 +27,7 @@ contract Pokedex is
 {
     struct Pokemon {
         uint256 generation;
-        uint256 id; /* official Pokemon id */
+        uint256 id /* official Pokemon id */;
         uint256 tokenId;
         bool isURIAssigned;
     }
@@ -50,7 +50,13 @@ contract Pokedex is
     mapping(uint256 => address) public requestIdToOwner;
     mapping(uint256 => Pokemon) public tokenIdToPokemon;
     // Gen 1 (index 0) rarity -> 10%, Gen 2 (index 1) -> 15% etc...
-    uint256[5] private generationRarity = [10, 25, 45, 70, 100]; /* UPDATE WHEN YOU CHANGE # OF GENERATIONS! */
+    uint256[5] private generationRarity = [
+        10,
+        25,
+        45,
+        70,
+        100
+    ]; /* UPDATE WHEN YOU CHANGE # OF GENERATIONS! */
     uint256 public pokemonGenerations;
 
     //////////////////
@@ -88,10 +94,7 @@ contract Pokedex is
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(URI_ASSIGNER_ROLE, msg.sender);
-        _setDefaultRoyalty(
-            address(this),
-            50 /* 5% royalty */
-        );
+        _setDefaultRoyalty(address(this), 50 /* 0.5% royalty */);
 
         maxSupply = _maxSupply;
         initialURI = _initialURI;
@@ -137,10 +140,10 @@ contract Pokedex is
         }
     }
 
-    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords)
-        internal
-        override
-    {
+    function fulfillRandomWords(
+        uint256 _requestId,
+        uint256[] memory _randomWords
+    ) internal override {
         uint256 tokenId = tokenCounter;
         address nftOwner = requestIdToOwner[_requestId];
         tokenCounter++;
@@ -154,20 +157,16 @@ contract Pokedex is
 
         _safeMint(nftOwner, tokenId);
         _setTokenURI(tokenId, initialURI);
-        _setTokenRoyalty(
-            tokenId,
-            address(this),
-            50 /* 5% royalty */
-        );
+        _setTokenRoyalty(tokenId, address(this), 50 /* 5% royalty */);
 
         emit RandomWordsFulfilled(tokenId, _randomWords[0], _randomWords[1]);
         emit NftMinted(nftOwner, tokenId);
     }
 
-    function setTokenURI(uint256 _tokenId, string calldata _uri)
-        external
-        onlyRole(URI_ASSIGNER_ROLE)
-    {
+    function setTokenURI(
+        uint256 _tokenId,
+        string calldata _uri
+    ) external onlyRole(URI_ASSIGNER_ROLE) {
         // URI can't be reassigned once it has been set
         if (tokenIdToPokemon[_tokenId].isURIAssigned) revert Pokemon__URIAlreadyAssigned();
 
@@ -177,7 +176,10 @@ contract Pokedex is
     }
 
     function _chooseGeneration(uint256 _randomWord) internal view returns (uint256) {
-        uint256 rng = _randomWord % generationRarity[generationRarity.length - 1]; /* get a random number between 0 and 99 */
+        uint256 rng = _randomWord %
+            generationRarity[
+                generationRarity.length - 1
+            ]; /* get a random number between 0 and 99 */
         for (uint256 i = 0; i < generationRarity.length; i++) {
             if (rng < generationRarity[i]) {
                 return i;
@@ -186,10 +188,10 @@ contract Pokedex is
         revert Pokedex__RangeOutOfBounds();
     }
 
-    function _choosePokemon(uint256 _pokemonGeneration, uint256 _randomWord)
-        internal
-        returns (uint256)
-    {
+    function _choosePokemon(
+        uint256 _pokemonGeneration,
+        uint256 _randomWord
+    ) internal returns (uint256) {
         // get rng based on pokemen generation's count, extract the pokemon index and remove from array
         uint256 rng = _randomWord % pokemonGenerationCount[_pokemonGeneration].length;
         uint256 chosenPokemon = pokemonGenerationCount[_pokemonGeneration][rng];
@@ -217,11 +219,9 @@ contract Pokedex is
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function getPokemonLeftByGenerationArray(uint256 _generation)
-        external
-        view
-        returns (uint256[] memory)
-    {
+    function getPokemonLeftByGenerationArray(
+        uint256 _generation
+    ) external view returns (uint256[] memory) {
         return pokemonGenerationCount[_generation];
     }
 
@@ -249,21 +249,15 @@ contract Pokedex is
         super._burn(tokenId);
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Royalty, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, ERC721Royalty, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
